@@ -56,6 +56,9 @@ export class SocialAuthService {
   }
 
   public getGoogleUserConsent(): void {
+    if (!this.socialAuthConfig.google.nonce) {
+      this.socialAuthConfig.google.nonce = this.generateCSRFToken(20);
+    }
     const oauth2Endpoint = this.googleProvider.getOauth2Endpoint();
     const params = this.googleProvider.getUserConsentParams(this.socialAuthConfig.google);
     this.getUserConsent(oauth2Endpoint, params);

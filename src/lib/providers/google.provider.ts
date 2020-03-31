@@ -29,6 +29,7 @@ export class GoogleProvider {
       redirect_uri: config.redirectUri,
       scope: config.scope,
       response_type: config.responseType,
+      nonce: config.nonce
     };
 
     if (config.includeGrantedScopes) {
