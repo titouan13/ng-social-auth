@@ -46,7 +46,7 @@ export class SocialAuthService {
     }
 
     // Check if csrf token is valid
-    if (!uriParams.hasOwnProperty('state') || csrf === null || decodeURIComponent(uriParams['state']) !== csrf) {
+    if (!uriParams.hasOwnProperty('state') || csrf === null || uriParams['state'] !== csrf) {
       return new Observable(observable => {
         observable.error(uriParams);
       });
@@ -101,7 +101,7 @@ export class SocialAuthService {
     const uriParams = {};
     uri.split('&').forEach(arg => {
       const item = arg.split('=');
-      uriParams[item[0]] = decodeURIComponent(item[1]);
+      uriParams[item[0]] = item[1];
     });
 
     return uriParams;
