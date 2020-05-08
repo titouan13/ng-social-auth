@@ -23,7 +23,7 @@ export class GoogleProvider {
   }
 
   // https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow
-  getUserConsentParams(config: GoogleConfig): object {
+  getUserConsentParams(config: GoogleConfig, scope: string): object {
     const params = {
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
@@ -31,6 +31,11 @@ export class GoogleProvider {
       response_type: config.responseType,
       nonce: config.nonce
     };
+
+    // Allow scope to be overridden
+    if(typeof scope !== 'undefined' && scope !== null){
+      params['scope'] = scope;
+    }
 
     if (config.includeGrantedScopes) {
       params['include_granted_scopes'] = config.includeGrantedScopes;

@@ -30,13 +30,18 @@ export class MicrosoftProvider {
   }
 
   // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-implicit-grant-flow
-  getUserConsentParams(config: MicrosoftConfig): object {
+  getUserConsentParams(config: MicrosoftConfig, scope: string): object {
     const params = {
       client_id: config.clientId,
       response_type: config.responseType,
       scope: config.scope,
       nonce: config.nonce
     };
+
+    // Allow scope to be overridden
+    if(typeof scope !== 'undefined' && scope !== null){
+      params['scope'] = scope;
+    }
 
     if (config.responseMode) {
       params['response_mode'] = config.responseMode;

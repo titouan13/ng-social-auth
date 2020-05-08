@@ -18,7 +18,7 @@ export class FacebookProvider {
   }
 
   // https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/
-  getUserConsentParams(config: FacebookConfig): object {
+  getUserConsentParams(config: FacebookConfig, scope: string): object {
     const params = {
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
@@ -28,7 +28,12 @@ export class FacebookProvider {
       params['response_type'] = config.responseType;
     }
     if (config.scope) {
-      params['scope'] = config.scope;
+      // Allow scope to be overridden
+      if(typeof scope !== 'undefined' && scope !== null){
+        params['scope'] = scope;
+      } else {
+        params['scope'] = config.scope;
+      }
     }
     return params;
   }

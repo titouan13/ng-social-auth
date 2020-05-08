@@ -16,13 +16,18 @@ export class LinkedinProvider {
   }
 
   // https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context
-  getUserConsentParams(config: LinkedinConfig): object {
+  getUserConsentParams(config: LinkedinConfig, scope: string): object {
     const params = {
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
       scope: config.scope,
       response_type: 'code'
     };
+
+    // Allow scope to be overridden
+    if(typeof scope !== 'undefined' && scope !== null){
+      params['scope'] = scope;
+    }
 
     return params;
   }

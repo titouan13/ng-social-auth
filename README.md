@@ -1,5 +1,4 @@
 # NgSocialAuth
-This module is in BETA version. Any help is appreciated.
 This lib willingly avoid using official libs provided by companies. This is what keeps this lib lightweight and guarantees that your social auth won't be blocked by extensions such as ghostery, adblock, ublock etc.
 
 ## Installation
@@ -34,7 +33,8 @@ Get user consent from the appropriate provider:
 getGoogleUserConsent()  
 getMicrosoftUserConsent()  
 getLinkedinUserConsent()  
-getFacebookUserConsent()  
+getFacebookUserConsent()
+You can pass scope as arg of any of these functions. Useful when you need 2 scopes, one for signup and the other one for login.
 
 On your redirect URI, in the constructor  
 ```javascript
@@ -124,3 +124,7 @@ Configuration:
   responseType: string;
   scope: string;  
 ```
+
+## Nonce & CSRF
+You can access nonce & csrf value before calling getParsedResponse(). They are stored in localStorage under the respective name csrf_social_nonce & csrf_social_csrf.
+

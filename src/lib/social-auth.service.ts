@@ -14,12 +14,12 @@ export class SocialAuthService {
   socialAuthConfig: SocialAuthConfig;
 
   constructor(
-    private googleProvider: GoogleProvider,
-    private microsoftProvider: MicrosoftProvider,
-    private facebookProvider: FacebookProvider,
-    private linkedinProvider: LinkedinProvider,
-    @Inject(SocialAuthConfigService) private socialAuthConfigC: SocialAuthConfig
-  ) {
+              private googleProvider: GoogleProvider,
+              private microsoftProvider: MicrosoftProvider,
+              private facebookProvider: FacebookProvider,
+              private linkedinProvider: LinkedinProvider,
+              @Inject(SocialAuthConfigService) private socialAuthConfigC: SocialAuthConfig
+              ) {
     this.socialAuthConfig = socialAuthConfigC;
   }
 
@@ -27,6 +27,9 @@ export class SocialAuthService {
     const uriParams = this.getUriParams();
     const csrf = localStorage.getItem('csrf_social_auth');
     localStorage.removeItem('csrf_social_auth');
+
+    const nonce = localStorage.getItem('nonce_social_auth');
+    localStorage.removeItem('nonce_social_auth');
 
     // No auth found in URI
     if (uriParams === null) {
@@ -55,33 +58,33 @@ export class SocialAuthService {
     });
   }
 
-  public getGoogleUserConsent(): void {
+  public getGoogleUserConsent(scope?: string): void {
     if (!this.socialAuthConfig.google.nonce) {
-      this.socialAuthConfig.google.nonce = this.generateCSRFToken(20);
+      this.socialAuthConfig.google.nonce = this.generateNonce(20);
     }
     const oauth2Endpoint = this.googleProvider.getOauth2Endpoint();
-    const params = this.googleProvider.getUserConsentParams(this.socialAuthConfig.google);
+    const params = this.googleProvider.getUserConsentParams(this.socialAuthConfig.google, scope);
     this.getUserConsent(oauth2Endpoint, params);
   }
 
-  public getMicrosoftUserConsent(): void {
+  public getMicrosoftUserConsent(scope?: string): void {
     if (!this.socialAuthConfig.microsoft.nonce) {
-      this.socialAuthConfig.microsoft.nonce = this.generateCSRFToken(20);
+      this.socialAuthConfig.microsoft.nonce = this.generateNonce(20);
     }
     const oauth2Endpoint = this.microsoftProvider.getOauth2Endpoint(this.socialAuthConfig.microsoft);
-    const params = this.microsoftProvider.getUserConsentParams(this.socialAuthConfig.microsoft);
+    const params = this.microsoftProvider.getUserConsentParams(this.socialAuthConfig.microsoft, scope);
     this.getUserConsent(oauth2Endpoint, params);
   }
 
-  public getLinkedinUserConsent(): void {
+  public getLinkedinUserConsent(scope?: string): void {
     const oauth2Endpoint = this.linkedinProvider.getOauth2Endpoint();
-    const params = this.linkedinProvider.getUserConsentParams(this.socialAuthConfig.linkedin);
+    const params = this.linkedinProvider.getUserConsentParams(this.socialAuthConfig.linkedin, scope);
     this.getUserConsent(oauth2Endpoint, params);
   }
 
-  public getFacebookUserConsent(): void {
+  public getFacebookUserConsent(scope?: string): void {
     const oauth2Endpoint = this.facebookProvider.getOauth2Endpoint();
-    const params = this.facebookProvider.getUserConsentParams(this.socialAuthConfig.facebook);
+    const params = this.facebookProvider.getUserConsentParams(this.socialAuthConfig.facebook, scope);
     this.getUserConsent(oauth2Endpoint, params);
   }
 
@@ -104,21 +107,32 @@ export class SocialAuthService {
     return uriParams;
   }
 
-  private generateCSRFToken(length: number) {
+  private generateRandomString(length: number) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789)(*%$#@!,.;';
     const charactersLength = characters.length;
     for (let i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
+    return result;
+  }
+
+  private generateCSRFToken(length: number) {
+    const result = this.generateRandomString(length);
 
     localStorage.setItem('csrf_social_auth', result);
     return result;
   }
 
+  private generateNonce(length: number) {
+    const result = this.generateRandomString(length);
+
+    localStorage.setItem('nonce_social_auth', result);
+    return result;
+  }
+
   private getUserConsent(oauth2Endpoint: string, params: object): void {
     // Add a CSRF token
-    // params['state'] = '{csrf:' + this.generateCSRFToken(40) + '}';
     params['state'] = this.generateCSRFToken(40);
 
     // Create <form> element to submit parameters to OAuth 2.0 endpoint.
@@ -131,12 +145,7 @@ export class SocialAuthService {
       const input = document.createElement('input');
       input.setAttribute('type', 'hidden');
       input.setAttribute('name', p);
-      // Redirect_uri must not be encoded
-      if (p === 'redirect_uri') {
-        input.setAttribute('value', params[p]);
-      } else {
-        input.setAttribute('value', encodeURIComponent(params[p]));
-      }
+      input.setAttribute('value', params[p]);
       form.appendChild(input);
     }
 
