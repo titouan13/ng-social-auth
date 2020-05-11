@@ -25,10 +25,13 @@ export class SocialAuthService {
 
   public getParsedResponse(): Observable<any> {
     const uriParams = this.getUriParams();
-    const csrf = localStorage.getItem('csrf_social_auth');
+
+    // Get base64 string from local storage and decode it
+    const csrf = atob(localStorage.getItem('csrf_social_auth'));
     localStorage.removeItem('csrf_social_auth');
 
-    const nonce = localStorage.getItem('nonce_social_auth');
+    // Get base64 string from local storage and decode it
+    const nonce = atob(localStorage.getItem('nonce_social_auth'));
     localStorage.removeItem('nonce_social_auth');
 
     // No auth found in URI
@@ -120,14 +123,16 @@ export class SocialAuthService {
   private generateCSRFToken(length: number) {
     const result = this.generateRandomString(length);
 
-    localStorage.setItem('csrf_social_auth', result);
+    // Store base64 encoded string
+    localStorage.setItem('csrf_social_auth', btoa(result));
     return result;
   }
 
   private generateNonce(length: number) {
     const result = this.generateRandomString(length);
 
-    localStorage.setItem('nonce_social_auth', result);
+    // Store base64 encoded string
+    localStorage.setItem('nonce_social_auth', btoa(result));
     return result;
   }
 
