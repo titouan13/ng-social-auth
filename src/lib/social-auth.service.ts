@@ -30,10 +30,6 @@ export class SocialAuthService {
     const csrf = atob(localStorage.getItem('csrf_social_auth'));
     localStorage.removeItem('csrf_social_auth');
 
-    // Get base64 string from local storage and decode it
-    const nonce = atob(localStorage.getItem('nonce_social_auth'));
-    localStorage.removeItem('nonce_social_auth');
-
     // No auth found in URI
     if (uriParams === null) {
       return new Observable(observable => {
@@ -42,14 +38,14 @@ export class SocialAuthService {
     }
 
     // Error sent by id provider
-    if (uriParams.hasOwnProperty('error') && uriParams['error'] !== '') {
+    if (uriParams.hasOwnProperty('error') && atob(uriParams['error']) !== '') {
       return new Observable(observable => {
         observable.error(uriParams);
       });
     }
 
     // Check if csrf token is valid
-    if (!uriParams.hasOwnProperty('state') || csrf === null || uriParams['state'] !== csrf) {
+    if (!uriParams.hasOwnProperty('state') || csrf === null || atob(uriParams['state']) !== csrf) {
       return new Observable(observable => {
         observable.error(uriParams);
       });
@@ -120,25 +116,27 @@ export class SocialAuthService {
     return result;
   }
 
-  private generateCSRFToken(length: number) {
-    const result = this.generateRandomString(length);
+  private generateBase64CSRFToken(length: number) {
+    // Generate and base64 encode
+    const result = btoa(this.generateRandomString(length));
 
     // Store base64 encoded string
-    localStorage.setItem('csrf_social_auth', btoa(result));
+    localStorage.setItem('csrf_social_auth', result);
     return result;
   }
 
   private generateNonce(length: number) {
+    // Generate and base64 encode
     const result = this.generateRandomString(length);
 
     // Store base64 encoded string
-    localStorage.setItem('nonce_social_auth', btoa(result));
+    localStorage.setItem('nonce_ng_social_auth', result);
     return result;
   }
 
   private getUserConsent(oauth2Endpoint: string, params: object): void {
     // Add a CSRF token
-    params['state'] = this.generateCSRFToken(40);
+    params['state'] = this.generateBase64CSRFToken(40);
 
     // Create <form> element to submit parameters to OAuth 2.0 endpoint.
     const form = document.createElement('form');
